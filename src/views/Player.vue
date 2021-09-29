@@ -97,8 +97,8 @@ export default {
         createPlayer() {
             // Create youtube player object
             this.player = new YT.Player('player', {
-                height: '390',
-                width: '640',
+                height: '100%',
+                width: '100%',
                 videoId: this.playlistItems[0].snippet.resourceId.videoId,
                 playerVars: {
                     'playsinline': 1
@@ -160,6 +160,10 @@ export default {
 </script>
 
 <style>
+#player {
+    height: 480px;
+    width: 720px;
+}
 #playlist-list {
     height: 720px;
     max-width: 720px;
