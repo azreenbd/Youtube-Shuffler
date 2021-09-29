@@ -1,15 +1,26 @@
 <template>
-    <div>
-        <div id="player"></div>
-        <p v-if="isLoading">Loading</p>
-        <p>{{playlistItems.length}}</p>
+    <div class="container">
         <div>
-            <button @click="playVideo(nowPlayingIndex-1)">⏮ Prev</button>
-            <button @click="playVideo(nowPlayingIndex+1)">Next ⏭</button>
-        </div>
-        <div id="playlist-list" ref="playlistList">
-            <div v-for="(video, index) in playlistItems" :key="video.etag" :ref="video.snippet.resourceId.videoId" class="playlist-item" :id="index === nowPlayingIndex ? 'playlist-item-active' : null" @click="playVideo(index)">
-                <span v-if="index === nowPlayingIndex">▶ </span> {{video.snippet.title}}
+            <div style="display:flex; justify-content:center;">
+                <div id="player"/>
+            </div>
+            <div v-if="isLoading">
+                Loading...
+            </div>
+            <div v-else-if="isError">
+                {{errorMsg}}
+            </div>
+            <div v-else>
+                <p align="center">Playing {{nowPlayingIndex+1}} of {{playlistItems.length}} {{playlistItems.length === 1 ? 'video' : 'videos'}}</p>
+                <div class="nav-row">
+                    <button @click="playVideo(nowPlayingIndex-1)">⏮ Prev</button>
+                    <button @click="playVideo(nowPlayingIndex+1)">Next ⏭</button>
+                </div>
+                <div id="playlist-list" ref="playlistList">
+                    <div v-for="(video, index) in playlistItems" :key="video.etag" :ref="video.snippet.resourceId.videoId" class="playlist-item" :id="index === nowPlayingIndex ? 'playlist-item-active' : null" @click="playVideo(index)">
+                        <span v-if="index === nowPlayingIndex">▶ </span> {{video.snippet.title}}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -27,6 +38,7 @@ export default {
             playlistIds: typeof this.$route.query.id === 'string' ? [this.$route.query.id] : this.$route.query.id,
             isLoading: false,
             isError: false,
+            errorMsg: 'Error',
             loopPlaylist: true,
             playlistItems: [],
             nowPlayingIndex: 0,
@@ -40,9 +52,12 @@ export default {
         var firstScriptTag = document.getElementsByTagName('script')[0];
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-        
-
-        this.getPlaylistItems(this.playlistIds);
+        if(this.playlistIds) {
+            this.getPlaylistItems(this.playlistIds);
+        }
+        else {
+            this.$router.push('/');
+        }
     },
     methods: {
         async getPlaylistItems(playlistIds) {
@@ -65,10 +80,11 @@ export default {
 
                     this.playlistItems = this.playlistItems.concat(res.data.items);
                 })
-                .catch(()=>{
+                .catch((err)=>{
                     nextPageAvailable = false;
                     this.isLoading = false;
                     this.isError = true;
+                    this.errorMsg = err;
                 });
 
                 while(nextPageAvailable) {
@@ -79,20 +95,34 @@ export default {
 
                         this.playlistItems = this.playlistItems.concat(res.data.items);
                     })
-                    .catch(()=>{
+                    .catch((err)=>{
                         nextPageAvailable = false;
                         this.isLoading = false;
                         this.isError = true;
+                        this.errorMsg = err;
                     });
                 }
+            }
+
+            // Shuffle playlist
+            if(this.playlistItems.length > 0) {
+                this.shufflePlaylist();
+            }
+            else {
+                this.isLoading = false;
+            }
+        },
+        shufflePlaylist() {
+            // Durstenfeld shuffle algorithm
+            for (let i = this.playlistItems.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [this.playlistItems[i], this.playlistItems[j]] = [this.playlistItems[j], this.playlistItems[i]];
             }
 
             // Stop loading
             this.isLoading = false;
             // Load player
-            if(this.playlistItems.length > 0) {
-                this.createPlayer();
-            }
+            this.createPlayer();
         },
         createPlayer() {
             // Create youtube player object
@@ -161,8 +191,8 @@ export default {
 
 <style>
 #player {
-    height: 480px;
-    width: 720px;
+    height: 384px;
+    width: 80%;
 }
 #playlist-list {
     height: 720px;
@@ -181,6 +211,9 @@ export default {
     padding: .8rem 2rem;
     border-bottom: .5px solid #464646;
     cursor: pointer;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 .playlist-item:hover {
     background-color: #464646;
@@ -190,5 +223,15 @@ export default {
 }
 #playlist-item-active {
     color: #fff;
+    font-weight: bold;
+}
+.nav-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 1rem 0;
+}
+.nav-row button {
+    width: 50%;
+    margin: .5rem;
 }
 </style>

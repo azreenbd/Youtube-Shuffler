@@ -1,12 +1,12 @@
 <template>
-  <div>
+  <div class="container">
     <form @submit.prevent="goToPlayer">
-      <div v-for="(id, index) in playlistIds" :key="index" style="margin:.75rem 0">
-        <input type="text" v-model="id.playlistId" required>
+      <div v-for="(id, index) in playlistIds" :key="index" style="margin: .75rem 0">
+        <input type="text" v-model="id.playlistId" placeholder="Enter playlist id" required>
         <button type="button" @click="removePlaylistId(index)" v-if="index < playlistIds.length-1" class="btn-round">-</button>
         <button type="button" @click="addPlaylistId()" v-if="index === playlistIds.length-1" class="btn-round">+</button>
       </div>
-      <button type="submit" class="btn-play">Play</button>
+      <button type="submit" class="btn-play" style="margin-top: 1rem">Play</button>
     </form>
   </div>
 </template>
@@ -44,21 +44,8 @@ export default {
 </script>
 
 <style>
-input[type=text] {
-  background-color: #363636;
-  color: #fff;
-  width: 450px;
-  padding: 1rem;
-  border: 0;
-  border-radius: 2rem;
-  margin-right: .5rem;
-}
-button {
-  background-color: #00ba88;
-  color: #fff;
-  padding: 1rem;
-  border-radius: 2rem;
-  border: 0;
+form {
+  text-align: center;
 }
 .btn-round {
   height: 3rem;
