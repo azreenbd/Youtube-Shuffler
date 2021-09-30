@@ -195,7 +195,7 @@ export default {
     width: 80%;
 }
 #playlist-list {
-    height: 720px;
+    height: 700px;
     max-width: 720px;
     overflow-y: scroll;
     background: #252525;
